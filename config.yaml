@@ -1,0 +1,5 @@
+bookmark_path: '/Users/sethhaney/Library/Application Support/Google/Chrome/Profile 2/Bookmarks'
+llm_model: 'gpt-3.5-turbo'
+keyword_fn: 'data/keywords.csv'
+resume_fn: 'data/resume.txt'
+jobs_bookmark_folder: 'Job-searching/Jobs'

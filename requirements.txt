@@ -1,0 +1,12 @@
+pandas
+numpy
+requests
+openai
+pydantic
+playwright
+beautifulsoup4
+sqlalchemy
+tqdm
+streamlit
+tabulate
+PyYAML
