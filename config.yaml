@@ -1,5 +1,15 @@
+
+#Parsing bookmarks
 bookmark_path: '/Users/sethhaney/Library/Application Support/Google/Chrome/Profile 2/Bookmarks'
+jobs_bookmark_folder: 'Job-searching/Jobs'
+
+#Job parser
 llm_model: 'gpt-3.5-turbo'
 keyword_fn: 'data/keywords.csv'
+
+#Resume alignment score
 resume_fn: 'data/resume.txt'
-jobs_bookmark_folder: 'Job-searching/Jobs'
+scored_job_example_fns:
+  '9': 'data/job_examples/good_fit_job_example.txt'
+  '6': 'data/job_examples/moderate_fit_job_example.txt'
+  '1': 'data/job_examples/poor_fit_job_example.txt' 

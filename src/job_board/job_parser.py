@@ -56,7 +56,8 @@ class JobParser:
             self, 
             llm_model: str = 'gpt-3.5-turbo', 
             keywords: list[str] = None, 
-            resume_fn: str = 'resume.txt'
+            resume_fn: str = 'resume.txt',
+            scored_job_example_fns: dict = {}
         ):
         """
         Docstring for __init__
@@ -66,6 +67,7 @@ class JobParser:
         self.llm_model = llm_model
         self.keywords = keywords or []
         self.resume_fn = resume_fn
+        self.scored_job_example_fns = scored_job_example_fns
 
     def main(self, url: str) -> dict:
         try:
@@ -117,6 +119,9 @@ class JobParser:
             "Score:"
         )
 
+        if len(self.scored_job_example_fns) > 0:
+            prompt += self.append_scored_job_examples()
+
         response = CLIENT.chat.completions.create(
             model=self.llm_model,
             temperature=0,
@@ -136,6 +141,21 @@ class JobParser:
                 raise ValueError(f"Score {score} out of range")
         except ValueError as e:
             raise RuntimeError(f"Invalid score returned: {content}") from e
+        
+    def append_scored_job_examples(self) -> str:
+        examples = "\n\nHere are some examples of job descriptions and their scores:\n"
+        for score, job_fn in self.scored_job_example_fns.items():
+            try:
+                with open(job_fn, "r") as f:
+                    job_desc = f.read()
+                    examples += (
+                        f"Job Description:\n{job_desc}\n\n"
+                        f"Score: {score}\n\n"
+                    )
+            except FileNotFoundError:
+                print(f"Example files '{job_fn}' not found. Skipping this example.")
+                continue
+        return examples
         
     def add_job_meta(self, job: dict, url: str) -> dict:
         job["url"] = url

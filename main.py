@@ -156,7 +156,8 @@ if __name__ == "__main__":
             folder_path=config.get('jobs_bookmark_folder', 'Job-searching/Jobs'),
             llm_model=config.get('llm_model', 'gpt-3.5-turbo'), 
             keywords_fn=config.get('keyword_fn', None), 
-            resume_fn=config.get('resume_fn', None)
+            resume_fn=config.get('resume_fn', None),
+            scored_job_example_fns=config.get('scored_job_example_fns', {}),
         )
     if args.jobs_snapshot:
         jobs_snapshot()
