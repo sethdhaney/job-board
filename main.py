@@ -30,7 +30,9 @@ DEFAULT_CONFIG_FN = join(CUR_DIR, "config.yaml")
 def generate_job_listings(
         exceptions_fn=EXCEPTIONS_FN, skip_prev_exceptions=False,
         book_marks_path: Path = '', folder_path: str = 'Job-searching/Jobs',
-        llm_model: str = 'gpt-3.5-turbo', keywords_fn=None, resume_fn: str = 'resume.txt',
+        llm_model: str = 'gpt-3.5-turbo', keywords_fn=None, 
+        resume_fn: str = 'resume.txt',
+        scored_job_example_fns: dict = {}
         ):
     '''
     Generate job listings from bookmarks
@@ -44,7 +46,10 @@ def generate_job_listings(
 
     # Parse and store jobs
     keywords = get_kewords_from_file(keywords_fn)
-    job_parser = JobParser(llm_model=llm_model, keywords=keywords, resume_fn=resume_fn)
+    job_parser = JobParser(
+        llm_model=llm_model, keywords=keywords, 
+        resume_fn=resume_fn, scored_job_example_fns=scored_job_example_fns
+        )
 
     if exists(exceptions_fn):
         prev_exceptions = pd.read_csv(exceptions_fn)
