@@ -228,3 +228,4 @@ marimo/_lsp/
 __marimo__/
 src/walking_foundation_model/nhanes_walk_extraction/extracted_walk_dbs/status_db_df.csv
 scratch/Scratch.ipynb
+job_application.yaml
