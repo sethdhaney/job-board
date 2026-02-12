@@ -10,11 +10,15 @@ import yaml
 from os.path import abspath, dirname, join, exists
 from tqdm import tqdm
 from pathlib import Path
+from os import remove
 
 from job_board.bookmark_reader import BookmarkReader
 from job_board.job_db import (
     init_db, insert_job, job_exists, 
-    get_df_from_applications_db, get_df_from_jobs_db
+    get_df_from_db, Job, JobApplication,
+    DB_FN, replace_table_with_dataframe,
+    add_row_to_database, CUR_DIR, BASE_DIR, 
+    DATABASE_URL
 )
 from job_board.job_parser import JobParser
 
@@ -25,6 +29,7 @@ DEFAULT_JOBS_SNAPSHOT_FILE = join(CUR_DIR, 'data', "jobs_snapshot.csv")
 DEFAULT_APPLICATIONS_SNAPSHOT_FILE = join(CUR_DIR, "data", "applications_snapshot.csv")
 EXCEPTIONS_FN = join(CUR_DIR, 'data', "exceptions.csv")
 DEFAULT_CONFIG_FN = join(CUR_DIR, "config.yaml")
+DEFAULT_JOB_YAML_FN = join(CUR_DIR, 'job_application.yaml')
 
 
 def generate_job_listings(
@@ -117,7 +122,7 @@ def jobs_snapshot(fn=DEFAULT_JOBS_SNAPSHOT_FILE):
     '''
     Docstring for jobs_snapshot
     '''
-    df_jobs = get_df_from_jobs_db()
+    df_jobs = get_df_from_db(Job)
     df_jobs.to_csv(fn, index=False)
     print(f"Jobs snapshot saved to {fn}")
 
@@ -125,9 +130,40 @@ def applications_snapshot(fn=DEFAULT_APPLICATIONS_SNAPSHOT_FILE):
     '''
     Docstring for applications_snapshot
     '''
-    df_applications = get_df_from_applications_db()
+    df_applications = get_df_from_db(JobApplication)
     df_applications.to_csv(fn, index=False)
     print(f"Applications snapshot saved to {fn}")
+
+def reset_db(
+        jobs_table_fn=DEFAULT_JOBS_SNAPSHOT_FILE, 
+        applications_table_fn=DEFAULT_APPLICATIONS_SNAPSHOT_FILE
+    ):
+    #Remove database file
+    if exists(DB_FN):
+        remove(DB_FN)
+
+    #Init database
+    init_db()
+
+    #Reload jobs table
+    if exists(jobs_table_fn):
+        df = pd.read_csv(jobs_table_fn)
+        replace_table_with_dataframe(df, 'jobs')
+
+    #Reload applications table
+    if exists(applications_table_fn):
+        df = pd.read_csv(applications_table_fn)
+        replace_table_with_dataframe(df, 'job_applications')
+    
+    return
+
+def add_application(yaml_fn=DEFAULT_JOB_YAML_FN):
+    #Get yaml job application data
+    with open(yaml_fn, 'r') as f:
+        job_data= yaml.safe_load(f)
+
+    add_row_to_database(job_data, table_name='job_applications', required_columns=['url'])
+    return 
 
 def get_config(config_fn=DEFAULT_CONFIG_FN):
     '''
@@ -145,6 +181,9 @@ if __name__ == "__main__":
     parser.add_argument("--jobs_snapshot", action="store_true", help="Create a snapshot of jobs database")
     parser.add_argument("--applications_snapshot", action="store_true", help="Create a snapshot of applications database")
     parser.add_argument("--config_fn", type=str, default=DEFAULT_CONFIG_FN, help="Path to configuration YAML file")
+    parser.add_argument('--reset_db', action='store_true', help='reset database with stored snapshots')
+    parser.add_argument('--add_application', action='store_true', 
+        help='store a new application row from job_application.yaml')
     args = parser.parse_args()
 
     REQUIRED_CONFIG_KEYS = ['bookmark_path']
@@ -168,4 +207,10 @@ if __name__ == "__main__":
         jobs_snapshot()
     if args.applications_snapshot:
         applications_snapshot()
+
+    if args.reset_db:
+        reset_db()
+
+    if args.add_application:
+        add_application()
 

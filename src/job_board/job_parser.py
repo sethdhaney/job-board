@@ -110,17 +110,20 @@ class JobParser:
 
         prompt = (
             "Given the following job description and resume, "
-            "score how well the resume matches the job on a scale of 0 to 10. "
-            "Return only the integer score.\n\n"
+            "score how well the resume matches the job on a scale of 0 to 10.\n\n"
             "Job Description:\n"
             f"{job['description']}\n\n"
             "Resume:\n"
             f"{resume_text}\n\n"
-            "Score:"
         )
 
         if len(self.scored_job_example_fns) > 0:
             prompt += self.append_scored_job_examples()
+
+        prompt += (
+            "\n\nReturn only the integer score."
+            "Score:"
+        )
 
         response = CLIENT.chat.completions.create(
             model=self.llm_model,
@@ -134,12 +137,15 @@ class JobParser:
         content = response.choices[0].message.content.strip()
 
         try:
+            if content.startswith("Score:"):
+                content = content.split("Score:")[-1].strip()
             score = int(content)
             if 0 <= score <= 10:
                 return score
             else:
                 raise ValueError(f"Score {score} out of range")
         except ValueError as e:
+            from code import interact; interact(local=dict(globals(), **locals()), banner='interact')
             raise RuntimeError(f"Invalid score returned: {content}") from e
         
     def append_scored_job_examples(self) -> str:
