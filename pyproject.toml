@@ -20,7 +20,8 @@ dependencies = [
     "tqdm",
     "streamlit",
     "tabulate",
-    "PyYAML"
+    "PyYAML",
+    "chromadb"
 ]
 
 [tool.setuptools]
